@@ -12,8 +12,8 @@ WHITE = (255, 255, 255)
 COLOR_INACTIVE = (255, 255, 255)
 SEARCHED = (214, 232, 213)
 TEXT_COLOR = (200, 200, 200)
-WIDTH = 700
-HEIGHT = 700
+WIDTH = 480
+HEIGHT = 480
 TITLE = "Maze Generator and Solver"
 
 pygame.init()

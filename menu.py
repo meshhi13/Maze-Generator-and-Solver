@@ -41,10 +41,10 @@ def menu_loop(state):
                             if item.text == "PLAY":
                                 return
                             elif item.text.startswith("ALGORITHM:"):
-                                state.algorithm = next(ALGORITHMS)
+                                state.algorithm = next(state.cycle_algo)
                                 item.text = f"ALGORITHM: {state.algorithm}"
                             elif item.text.startswith("SIZE:"):
-                                state.rows = next(SIZES)
+                                state.rows = next(state.cycle_size)
                                 item.text = f"SIZE: {state.rows}"
                                 state.cols = state.rows
                             elif item.text == "QUIT":

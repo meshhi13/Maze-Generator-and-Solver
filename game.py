@@ -6,48 +6,45 @@ from settings import *
 import time
 from objects import *
 
-def game_loop(rows, cols, algo):
+def game_loop(rows, cols, algo, path):
     tilesize = WIDTH // cols
 
-    grid = Grid(rows, cols)
+    path = []
+    grid = Grid(rows, cols, algo)
     stack = []
     current_cell = grid.grid[0][0]
-    done = False
     text_highlight = False
-    generated = False
+    STATE_GENERATE = False
+    STATE_SOLVE = False
+    STATE_DONE = False
+    text = ""
+
             
     grid.grid[0][0].start = True
     grid.grid[rows - 1][cols - 1].end = True
 
-    def recursive_bfs(current, arr):
-        time.sleep(0.02)
-        current.searched = True
-        current.draw(tilesize)
-        current.addNeighbors(tilesize)
-        pygame.display.update()
+    screen.fill(BGCOLOR)
 
-        if current.end:
-            return arr
+    while not STATE_DONE:
+        pygame.draw.rect(screen, BGCOLOR, (0, HEIGHT, WIDTH, 80))
+        if not STATE_GENERATE:
+            text = "GENERATING..."
+        elif not STATE_SOLVE:
+            text = "SOLVE MAZE"
+        else:
+            text = "RESTART"
 
-        for neighbor in current.neighbors:
-            result = recursive_bfs(neighbor, arr + [neighbor])
-            if result:
-                return result
-        
-        return None
+        if not STATE_GENERATE or not STATE_SOLVE:
+            for row in grid.grid:
+                for cell in row:
+                    cell.draw(tilesize)
 
-    while not done:
-        screen.fill(BGCOLOR)
-        text = FONT.render("GENERATING..." if not generated else "SOLVE MAZE", True, COLOR_INACTIVE if (text_highlight and generated) else TEXT_COLOR)
+        text = FONT.render(text, True, COLOR_INACTIVE if STATE_GENERATE and text_highlight else TEXT_COLOR)
         text_rect = text.get_rect(center=(WIDTH // 2, HEIGHT + 40))
         screen.blit(text, text_rect)
 
         current_cell.visited = True
         current_cell.current = True
-
-        for row in grid.grid:
-            for cell in row:
-                cell.draw(tilesize)
 
         next_cell = grid.checkNeighbors(current_cell, tilesize, rows, cols)
 
@@ -62,22 +59,36 @@ def game_loop(rows, cols, algo):
             current_cell.current = False
             current_cell = stack.pop()
         else:
-            generated = True
+            STATE_GENERATE = True
 
         for event in pygame.event.get():
             mouse_x, mouse_y = pygame.mouse.get_pos()
             if event.type == pygame.QUIT:
-                done = True
+                STATE_DONE = True
                 sys.exit()
             elif event.type == pygame.MOUSEMOTION:
                 text_highlight = text_rect.collidepoint(mouse_x, mouse_y)
             elif event.type == pygame.MOUSEBUTTONDOWN:
-                if event.button == 1 and text_rect.collidepoint(mouse_x, mouse_y):
-                    if generated:
-                        path = recursive_bfs(current_cell, [current_cell])
+                if text_rect.collidepoint(mouse_x, mouse_y):
+                    if STATE_GENERATE and not STATE_SOLVE:
+                        match grid.algo:
+                            case "DFS":
+                                path, cost = grid.recursive_dfs(current_cell, [current_cell], tilesize)
+                            case "BFS":
+                                path, cost = grid.iterative_bfs(current_cell, [current_cell], tilesize)
+                                path.reverse()
+                            case "A*":
+                                path, cost = grid.a_star(current_cell, [current_cell], tilesize)
+
                         if path:
-                            for i in path:
-                                i.path = True
+                            grid.draw_path_line(path, tilesize)
+                            pygame.display.update()
+
+
+                        STATE_SOLVE = True
+                    elif STATE_GENERATE and STATE_SOLVE:
+                        STATE_DONE = True
+
 
         pygame.display.flip()
         clock.tick(60)

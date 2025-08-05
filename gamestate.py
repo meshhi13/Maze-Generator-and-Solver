@@ -1,10 +1,9 @@
 from itertools import cycle
 
-SIZES = cycle([15, 20, 25, 30, 35, 40, 10])
-ALGORITHMS = cycle(["DFS", "BFS", "A*", "Dijkstra's"])
-
 class GameState:
     def __init__(self):
-        self.algorithm = "A*"
-        self.rows = 10
-        self.cols = 10
+        self.algorithm = "DFS"
+        self.rows = 8
+        self.cols = 8
+        self.cycle_algo = cycle(["BFS", "A*", "Dijkstra's", "DFS"])
+        self.cycle_size = cycle([16, 24, 32, 40, 8])

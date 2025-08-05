@@ -1,5 +1,8 @@
 import pygame
 from settings import *
+import time
+import math
+import heapq
 
 class Cell():
     def __init__(self, x, y, tilesize):
@@ -12,6 +15,7 @@ class Cell():
         self.end = False
         self.searched = False
         self.path = False
+        self.parent = None
         
         self.walls = [True, True, True, True]  # top, right, bottom, left
         self.neighbors = []
@@ -50,17 +54,16 @@ class Cell():
             self.neighbors.append(self.left)
             
     def draw(self, tilesize):
-        if self.start or self.path:
+        if self.end:
+            pygame.draw.rect(screen, RED, (self.x, self.y, tilesize, tilesize))
+        elif self.start or self.path:
             pygame.draw.rect(screen, GREEN, (self.x, self.y, tilesize, tilesize))
         elif self.searched:
             pygame.draw.rect(screen, SEARCHED, (self.x, self.y, tilesize, tilesize))
         elif self.current:
             pygame.draw.rect(screen, CURRENT, (self.x, self.y, tilesize, tilesize))
-        elif self.end:
-            pygame.draw.rect(screen, RED, (self.x, self.y, tilesize, tilesize))
         elif self.visited:
             pygame.draw.rect(screen, WHITE, (self.x, self.y, tilesize, tilesize))
-        
         
         if self.walls[0]:
             pygame.draw.line(screen, BLACK, (self.x, self.y), ((self.x + tilesize), self.y), 1)  # top
@@ -72,8 +75,80 @@ class Cell():
             pygame.draw.line(screen, BLACK, (self.x, (self.y + tilesize)), (self.x, self.y), 1)  # left
 
 class Grid():
-    def __init__(self, rows, cols):
+    def __init__(self, rows, cols, algo):
         self.grid = [[Cell(x, y, WIDTH // rows) for x in range(cols)] for y in range(rows)]
+        self.bfs_cost = 0
+        self.dfs_cost = 0
+        self.a_star_cost = 0
+        self.algo = algo
+
+    def draw_path_line(self, path, tilesize):
+        if len(path) < 2:
+            return
+
+        for i in range(len(path) - 1):
+            cell1 = path[i]
+            cell2 = path[i + 1]
+            x1 = cell1.x + tilesize // 2
+            y1 = cell1.y + tilesize // 2
+            x2 = cell2.x + tilesize // 2
+            y2 = cell2.y + tilesize // 2
+            pygame.draw.line(screen, (0, 255, 0), (x1, y1), (x2, y2), 2)
+            pygame.display.update()
+            time.sleep(0.02)
+
+    def heuristic(self, a, b):
+        return math.sqrt((a.x - b.x) ** 2 + (a.y - b.y) ** 2)
+
+    def a_star(self, current, solution, tilesize):
+        return [], self.a_star_cost
+
+    def iterative_bfs(self, current, solution, tilesize):
+        solution = []
+        queue = [current]
+        visited = [current]
+
+        while queue:
+            self.bfs_cost += 1
+            time.sleep(0.04)
+            node = queue.pop(0)
+            node.searched = True
+            node.draw(tilesize)
+            pygame.display.update()
+            node.addNeighbors(tilesize)
+            
+            if node.end:
+                solution.append(node)
+                while node:
+                    solution.append(node)
+                    node = node.parent
+                break
+
+            for neighbour in node.neighbors:
+                if neighbour not in visited:
+                    neighbour.parent = node
+                    queue.append(neighbour)
+                    visited.append(neighbour)
+
+        return solution, self.bfs_cost
+
+    def recursive_dfs(self, current, solution, tilesize):
+        self.dfs_cost += 1
+        time.sleep(0.04)
+        current.searched = True
+        current.draw(tilesize)
+        current.addNeighbors(tilesize)
+        pygame.display.update()
+
+        if current.end:
+            return solution, self.dfs_cost
+
+        for neighbor in current.neighbors:
+            result = self.recursive_dfs(neighbor, solution + [neighbor], tilesize)
+            if result:
+                return result
+        
+        return None
     
     def checkNeighbors(self, current_cell, tilesize, rows, cols):
         if int(current_cell.y / tilesize) - 1 >= 0:
