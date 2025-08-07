@@ -9,7 +9,6 @@ GREEN = (0, 255, 0)
 BGCOLOR = (61, 68, 194)
 CURRENT = (200, 200, 200, 100)
 WHITE = (255, 255, 255)
-COLOR_INACTIVE = (255, 255, 255)
 SEARCHED = (214, 232, 213)
 TEXT_COLOR = (200, 200, 200)
 WIDTH = 480
@@ -17,7 +16,7 @@ HEIGHT = 480
 TITLE = "Maze Generator and Solver"
 
 pygame.init()
-screen = pygame.display.set_mode((WIDTH, HEIGHT + 80))
+screen = pygame.display.set_mode((WIDTH, HEIGHT + 120))
 clock = pygame.time.Clock()
 pygame.display.set_caption(TITLE)
 FONT = pygame.font.SysFont(pygame.font.get_default_font(), 50)

@@ -10,13 +10,13 @@ def menu_loop(state):
         MenuItems(f"SIZE: {state.rows}", False, None),
         MenuItems(f"ALGORITHM: {state.algorithm}", False, None),
         MenuItems("QUIT", False, None)
-                  ]
+    ]
     
     while True:
         screen.fill(BGCOLOR)
         
         for i, item in enumerate(menu_items):
-            text = FONT.render(item.text, True, COLOR_INACTIVE if item.selected else TEXT_COLOR)
+            text = FONT.render(item.text, True, WHITE if item.selected else TEXT_COLOR)
             item.rect = text.get_rect(center=(WIDTH // 2, HEIGHT // 2 + (i-1.5) * 70))
             screen.blit(text, item.rect)
             

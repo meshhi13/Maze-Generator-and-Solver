@@ -6,18 +6,24 @@ from settings import *
 import time
 from objects import *
 
-def game_loop(rows, cols, algo, path):
+def game_loop(state, rows, cols, algo, path):
     tilesize = WIDTH // cols
 
     path = []
     grid = Grid(rows, cols, algo)
     stack = []
+    cost = []
     current_cell = grid.grid[0][0]
-    text_highlight = False
+    text_highlight1 = False
+    text_highlight2 = False
+    text_highlight3 = False
     STATE_GENERATE = False
     STATE_SOLVE = False
     STATE_DONE = False
-    text = ""
+    text_first= ""
+    button_first = ""
+    button_second = ""
+    button_third = ""
 
             
     grid.grid[0][0].start = True
@@ -26,23 +32,43 @@ def game_loop(rows, cols, algo, path):
     screen.fill(BGCOLOR)
 
     while not STATE_DONE:
-        pygame.draw.rect(screen, BGCOLOR, (0, HEIGHT, WIDTH, 80))
+        pygame.draw.rect(screen, BGCOLOR, (0, HEIGHT, WIDTH, 120))
         if not STATE_GENERATE:
-            text = "GENERATING..."
+            button_third = "RESTART"
+            text_first = "GENERATING..."
         elif not STATE_SOLVE:
-            text = "SOLVE MAZE"
+            button_first = "SOLVE MAZE"
+            button_second = f"ALGO: {grid.algo}"
+            text_first = "WAITING..."
         else:
-            text = "RESTART"
+            button_first = "CLEAR MAZE"
+            text_first = f"COST: {cost}"
 
         if not STATE_GENERATE or not STATE_SOLVE:
             for row in grid.grid:
                 for cell in row:
                     cell.draw(tilesize)
 
-        text = FONT.render(text, True, COLOR_INACTIVE if STATE_GENERATE and text_highlight else TEXT_COLOR)
-        text_rect = text.get_rect(center=(WIDTH // 2, HEIGHT + 40))
-        screen.blit(text, text_rect)
+        text1 = FONT.render(text_first, True, TEXT_COLOR)
+        text1_rect = text1.get_rect(center=(WIDTH // 2, HEIGHT + 22))
 
+        button1 = FONT.render(button_first, True, WHITE if text_highlight1 else TEXT_COLOR)
+        button1_rect = button1.get_rect(center=(WIDTH // 4, HEIGHT + 62))
+
+        button2 = FONT.render(button_second, True, WHITE if text_highlight2 else TEXT_COLOR)
+        button2_rect = button2.get_rect(center=(3 * WIDTH // 4, HEIGHT + 62))
+
+        button3 = FONT.render(button_third, True, WHITE if text_highlight3 else TEXT_COLOR)
+        button3_rect = button3.get_rect(center=(WIDTH // 2, HEIGHT + 102))
+        
+        pygame.draw.line(screen, BLACK, (WIDTH // 2, HEIGHT + 40), (WIDTH // 2, HEIGHT + 80), 1)
+        pygame.draw.line(screen, BLACK, (0, HEIGHT + 40), (WIDTH, HEIGHT + 40), 1)
+        pygame.draw.line(screen, BLACK, (0, HEIGHT + 80), (WIDTH, HEIGHT + 80), 1)
+
+        screen.blit(button1, button1_rect)
+        screen.blit(button2, button2_rect)
+        screen.blit(button3, button3_rect)
+        screen.blit(text1, text1_rect)
         current_cell.visited = True
         current_cell.current = True
 
@@ -67,9 +93,11 @@ def game_loop(rows, cols, algo, path):
                 STATE_DONE = True
                 sys.exit()
             elif event.type == pygame.MOUSEMOTION:
-                text_highlight = text_rect.collidepoint(mouse_x, mouse_y)
+                text_highlight1 = button1_rect.collidepoint(mouse_x, mouse_y)
+                text_highlight2 = button2_rect.collidepoint(mouse_x, mouse_y)
+                text_highlight3 = button3_rect.collidepoint(mouse_x, mouse_y)
             elif event.type == pygame.MOUSEBUTTONDOWN:
-                if text_rect.collidepoint(mouse_x, mouse_y):
+                if button1_rect.collidepoint(mouse_x, mouse_y):
                     if STATE_GENERATE and not STATE_SOLVE:
                         match grid.algo:
                             case "DFS":
@@ -79,15 +107,25 @@ def game_loop(rows, cols, algo, path):
                                 path.reverse()
                             case "A*":
                                 path, cost = grid.a_star(current_cell, [current_cell], tilesize)
+                                path.reverse()
 
                         if path:
                             grid.draw_path_line(path, tilesize)
                             pygame.display.update()
 
-
                         STATE_SOLVE = True
-                    elif STATE_GENERATE and STATE_SOLVE:
-                        STATE_DONE = True
+
+                    elif STATE_SOLVE:
+                        grid.reset_grid(tilesize)
+                        pygame.draw.rect(screen, BGCOLOR, (0, 0, WIDTH, HEIGHT))
+                        pygame.display.update()
+                        STATE_SOLVE = False
+
+                elif button2_rect.collidepoint(mouse_x, mouse_y):
+                    state.algorithm = next(state.cycle_algo)
+                    grid.algo = state.algorithm
+                elif button3_rect.collidepoint(mouse_x, mouse_y):
+                    STATE_DONE = True
 
 
         pygame.display.flip()

@@ -2,7 +2,7 @@ import pygame
 from settings import *
 import time
 import math
-import heapq
+from queue import PriorityQueue
 
 class Cell():
     def __init__(self, x, y, tilesize):
@@ -82,6 +82,18 @@ class Grid():
         self.a_star_cost = 0
         self.algo = algo
 
+    def reset_grid(self, tilesize):
+        self.dfs_cost = 0
+        self.a_star_cost = 0
+        self.bfs_cost = 0
+        for i in self.grid:
+            for j in i:
+                j.searched = False
+                j.current = False
+                j.parent = None
+                j.neighbors = []
+                j.draw(tilesize)
+
     def draw_path_line(self, path, tilesize):
         if len(path) < 2:
             return
@@ -93,15 +105,47 @@ class Grid():
             y1 = cell1.y + tilesize // 2
             x2 = cell2.x + tilesize // 2
             y2 = cell2.y + tilesize // 2
-            pygame.draw.line(screen, (0, 255, 0), (x1, y1), (x2, y2), 2)
+            pygame.draw.line(screen, (0, 255, 0), (x1, y1), (x2, y2), tilesize // 10)
             pygame.display.update()
             time.sleep(0.02)
 
     def heuristic(self, a, b):
-        return math.sqrt((a.x - b.x) ** 2 + (a.y - b.y) ** 2)
+        return abs(a.x - b.x) + abs(a.y - b.y)
 
     def a_star(self, current, solution, tilesize):
-        return [], self.a_star_cost
+        g_score = {current: 0}
+
+        pq = PriorityQueue()
+        pq.put((0, random.random(), current))
+        solution = []
+
+        while not pq.empty():
+            node = pq.get()[2]
+            node.addNeighbors(tilesize)
+            neighbors = node.neighbors
+            node.searched = True
+            node.draw(tilesize)
+            self.a_star_cost += 1
+            time.sleep(0.04)
+            pygame.display.update()
+
+            if node.end:
+                while node:
+                    solution.append(node)
+                    node = node.parent
+
+                break
+
+            for neighbor in neighbors:
+                tentative_g = g_score[node] + 1
+                if tentative_g < g_score.get(neighbor, float('inf')):
+                    g_score[neighbor] = tentative_g
+                    neighbor.parent = node
+                    f_score = tentative_g + self.heuristic(neighbor, self.grid[len(self.grid) - 1][len(self.grid[0]) - 1])
+                    pq.put((f_score, random.random(), neighbor))
+
+        return solution, self.a_star_cost
+
 
     def iterative_bfs(self, current, solution, tilesize):
         solution = []
@@ -112,6 +156,7 @@ class Grid():
             self.bfs_cost += 1
             time.sleep(0.04)
             node = queue.pop(0)
+
             node.searched = True
             node.draw(tilesize)
             pygame.display.update()
@@ -138,6 +183,7 @@ class Grid():
         current.searched = True
         current.draw(tilesize)
         current.addNeighbors(tilesize)
+
         pygame.display.update()
 
         if current.end:
