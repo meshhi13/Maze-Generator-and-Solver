@@ -3,13 +3,13 @@
 
 This is a Python implementation of a maze generator and solver. Develop massive mazes, solve them using various algorithms, and compare the costs of each algorithm on each size of maze.
 
-![Screen Recording 2025-07-14 at 4 52 55 PM](https://github.com/user-attachments/assets/28fe75db-78ba-4445-8045-5a071e4ccc3d)
+![Screen Recording 2025-08-07 at 1 32 23 PM](https://github.com/user-attachments/assets/83e35918-2bbd-4c58-9abb-af6e743a9dcb)
 
 ## Requirements
 
 Before running the game, ensure you have the following installed:
 
-- Python 3.8 or higher
+- Python 3.10 or higher
 - `pygame` library
 
 ## Features
