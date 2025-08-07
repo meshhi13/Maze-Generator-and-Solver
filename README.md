@@ -3,7 +3,8 @@
 
 This is a Python implementation of a maze generator and solver. Develop massive mazes, solve them using various algorithms, and compare the costs of each algorithm on each size of maze.
 
-![Screen Recording 2025-08-07 at 1 32 23 PM](https://github.com/user-attachments/assets/83e35918-2bbd-4c58-9abb-af6e743a9dcb)
+https://github.com/user-attachments/assets/96547acc-d402-4e92-91b3-61a1b07d7cb2
+
 
 ## Requirements
 
